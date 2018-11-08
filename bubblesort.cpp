@@ -24,6 +24,10 @@ void bubbleSortS(int arr[])
 
 void bubbleSortP(int arr[]) 
 { 
+    omp_set_num_threads(4);
+   #pragma omp parallel
+   {
+   }
    int i, j; 
    for (i = 0; i < N-1; i++)      
    {
@@ -62,7 +66,7 @@ int printArray(int A[])
 int main() 
 { 
 
-    omp_set_num_threads(4);
+
 
     cout<<"enter the number of elements to be sorted (number should be in the order of 2^n)";     //try to fix this issue 
     cin>>N;
@@ -86,6 +90,7 @@ int main()
 
     clock_t t1;
     t1=clock();
+ 
     bubbleSortP(B); 
     t1=clock()-t1;
     printf("It parallel sort %d clicks %f seconds \n",t1,((float)t1)/CLOCKS_PER_SEC);

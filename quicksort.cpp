@@ -1,121 +1,165 @@
-#include<iostream>
-#include<omp.h>
-#include<time.h>
-#include<cstdlib>
+#include <stdlib.h>
+#include <time.h>
+#include <omp.h>
+#include <iostream>
+#include <algorithm>
 using namespace std;
 
-int N;
+int numThreads = 4;
 
-void quicksortS(int Array[],int first,int last){ 
-    int pivot,j,temp,i; 
- 
-     if(first<last){ 
-         pivot=first; 
-         i=first; 
-         j=last; 
- 
-         while(i<j){ 
-             
-            while(Array[i]<=Array[pivot]&&i<last) 
-                 i++; 
-                while(Array[j]>Array[pivot]) 
-                    j--; 
-                if(i<j){ 
-                     temp=Array[i]; 
-                      Array[i]=Array[j]; 
-                      Array[j]=temp; 
-                } 
+int partition (int *arr, int low, int high) 
+{ 
+    int pivot = arr[high];  
+    int i = (low - 1); 
+  	int j,t;
+    for (j = low; j <= high- 1; j++) 
+    { 
+        if (arr[j] <= pivot) 
+        { 
+            i++;    
+            t = arr[i];
+            arr[i] = arr[j];
+            arr[j]= t;
         } 
- 
-         temp=Array[pivot]; 
-         Array[pivot]=Array[j]; 
-         Array[j]=temp; 
- 
-         quicksortS(Array,first,j-1); 
-         quicksortS(Array,j+1,last); 
-    }
-}  
+    } 
+	t = arr[i+1];
+    arr[i+1] = arr[high];
+    arr[high]= t;
+    return (i + 1); 
+} 
 
-void quicksortP(int Array[],int first,int last){ 
-    int pivot,j,temp,i; 
- 
-     if(first<last){ 
-         pivot=first; 
-         i=first; 
-         j=last; 
- 
-         while(i<j){ 
-             
-            while(Array[i]<=Array[pivot]&&i<last) 
-                 i++; 
-                while(Array[j]>Array[pivot]) 
-                    j--; 
-                if(i<j){ 
-                     temp=Array[i]; 
-                      Array[i]=Array[j]; 
-                      Array[j]=temp; 
-                } 
-        } 
- 
-         temp=Array[pivot]; 
-         Array[pivot]=Array[j]; 
-         Array[j]=temp; 
-            
-//        #pragma omp parallel sections num_threads(2)
-//         {
-//          #pragma omp section
-            quicksortP(Array,first,j-1); 
-//          #pragma omp section  
-            quicksortP(Array,j+1,last); 
-//         }
-    }
-}  
-
-int printArray(int A[])
+void quickSortSerialParallel_internal(int* array, int left, int right, int cutoff) 
 {
-    for (int i = 0; i < N; i++) {
-        printf("%d ", A[i]);
-    }
+	if(left<right){
+		int i = left, j = right;
+	int tmp;
+	int pivot = partition(array,left,right);
 
-    printf("\n");
+
+	if ( ((right-left)<cutoff) ){
+		quickSortSerialParallel_internal(array, left, pivot-1, cutoff); 			
+		quickSortSerialParallel_internal(array, pivot+1, right, cutoff); 
+
+	}else{
+		#pragma omp task 	
+		 quickSortSerialParallel_internal(array, left, pivot-1, cutoff); 
+		#pragma omp task 	
+		 quickSortSerialParallel_internal(array, pivot+1, right, cutoff); 	
+	}
+	
+	}
 }
 
-int main()
+void quickSortSerialParallel(int* array, int lenArray, int numThreads){
+
+	int cutoff = 1000;
+
+	#pragma omp parallel num_threads(numThreads)
+	{	
+		#pragma omp single nowait
+		{
+			quickSortSerialParallel_internal(array, 0, lenArray-1, cutoff);	
+		}
+	}	
+
+}
+
+void quickSortSerial(int* arr, int left, int right) 
 {
-//    omp_set_num_threads(2);
+	if(left<right){
+	int i = left, j = right;
+	int tmp;
+	int pivot = partition(arr,left,right);	
+		quickSortSerial(arr, left, pivot-1);
+		quickSortSerial(arr, pivot+1, right);
+	}
+}
 
-    cout<<"enter the number of elements to be sorted (number should be in the order of 2^n)";     //try to fix this issue 
-    cin>>N;
+bool checkResult(int *A,int *B,int lenArr){
+	int i = 0;
+	while(i<lenArr)
+	{
+		if(A[i]!=B[i]) { return false; }
+		i++;
+	}
+	return true;
+}
 
+void printArray(int *A,int lenArr){
+	if( lenArr <= 30 ){
+		for(int i = 0 ; i < lenArr; i++ ) 
+		{
+			printf("%d ", A[i]);
+		}
+		printf("\n");
+	}
+}
 
-    int A[N],B[N];
-    srand(time(NULL));
+int main(){
+	int lenArr;
+	cout<<"Number of Threads are-"<<numThreads<<endl;
+	cout<<"enter the number of elements to be sorted";     
+    cin>>lenArr;
+	double startTime, stopTime;
 
-    for (int i = 0; i < N; i++){
-        A[i] = B[i]  = (rand() % 4096);
+	int* arr1;
+	int* arr2; 
+	int* arr3;
+	arr1 = (int*) malloc(lenArr*sizeof(int));
+	arr2 = (int*) malloc(lenArr*sizeof(int));
+	arr3 = (int*) malloc(lenArr*sizeof(int));
 
-    }
+	int i;
+	srand(5);
+	printf("Initializing the arrays with random numbers...\n");
+	for (i=0; i<lenArr; i++){
+		arr1[i] = rand()%5000000;
+		arr2[i] = arr1[i];
+		arr3[i] = arr1[i];
+	}
+	printf("Initialization complete\n");
+	printArray(arr1,lenArr);
+	
+	printf("\nSorting with serial sort function of 'algorithm.h' ...");
+	startTime = clock();
+	sort(arr1,arr1+lenArr);
+	stopTime = clock();
+	printArray(arr1,lenArr);
+	printf("Sorted in (aprox.): %f seconds \n\n", (double)(stopTime-startTime)/CLOCKS_PER_SEC);
 
-    // printf("Original Array : ");
-    // printArray(A);
+	printf("\nSorting with custom serial quickSortSerial...");
+	startTime = clock();
+	quickSortSerial(arr2, 0, lenArr-1);
+	stopTime = clock();
+	printArray(arr2,lenArr);
+	printf("Sorted in (aprox.): %f seconds \n\n", (double)(stopTime-startTime)/CLOCKS_PER_SEC);
 
-    clock_t t;
-    t=clock();
-    
-    quicksortP(B, 0, N - 1);
-    t=clock()-t;
-    printf("It parallel sort %d clicks %f seconds \n",t,((float)t)/CLOCKS_PER_SEC);
+	printf("\nSorting with custom PARALLEL quickSortParallel... "); fflush(stdout);
+	startTime = clock();
+	quickSortSerialParallel(arr3, lenArr, numThreads);
+	stopTime = clock();
+	printArray(arr3,lenArr);
+	printf("Sorted in (aprox.): %f seconds \n\n", (stopTime-startTime)/CLOCKS_PER_SEC);
 
-    clock_t t1;
-    t1=clock();
-    quicksortS(A,0, N - 1);
-    t1=clock()-t1;
-    printf("It serial sort %d clicks %f seconds \n",t1,((float)t1)/CLOCKS_PER_SEC);
+	printf("\nChecking if the results are correct...\n");
+	bool correctResult;
+	correctResult = checkResult(arr1,arr2,lenArr);
+	if(correctResult==true){
+		printf("The result with 'custom SERIAL quickSortSerial' is CORRECT\n");
+	}else{
+		printf("The result with 'custom SERIAL quickSortSerial' is INCORRECT!!\n");
+	}
 
-    // printf("Modified Array : ");
-    // printArray(A);
-    // printf("Modified Array : ");
-    // printArray(B);
+	correctResult = checkResult(arr1,arr3,lenArr);
+	if(correctResult==true){
+		printf("The result with 'custom PARALLEL quickSortParallel' is CORRECT\n\n");
+	}else{
+		printf("The result with 'custom PARALLEL quickSortParallel' is INCORRECT!!\n");
+	}
 
-    return 0;
+	free(arr1);
+	free(arr2);
+	free(arr3);
+
+	return 0;
 }
