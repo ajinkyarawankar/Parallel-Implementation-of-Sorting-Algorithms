@@ -3,9 +3,10 @@
 #include <stdlib.h>
 #include<algorithm>
 #include<omp.h>
+#include<cstdlib>
 using namespace std;
 
-#define N 4096
+#define N 65536
 
 
 void merge(int A[], int temp[], int from, int mid, int to)

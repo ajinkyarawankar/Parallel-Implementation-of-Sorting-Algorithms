@@ -1,6 +1,7 @@
 #include<iostream>
 #include<omp.h>
 #include<time.h>
+#include<cstdlib>
 using namespace std;
 
 int N;
@@ -60,13 +61,13 @@ void quicksortP(int Array[],int first,int last){
          Array[pivot]=Array[j]; 
          Array[j]=temp; 
             
-        #pragma omp parallel sections
-         {
-          #pragma omp section
+//        #pragma omp parallel sections num_threads(2)
+//         {
+//          #pragma omp section
             quicksortP(Array,first,j-1); 
-          #pragma omp section  
+//          #pragma omp section  
             quicksortP(Array,j+1,last); 
-         }
+//         }
     }
 }  
 
@@ -81,7 +82,7 @@ int printArray(int A[])
 
 int main()
 {
-    omp_set_num_threads(2);
+//    omp_set_num_threads(2);
 
     cout<<"enter the number of elements to be sorted (number should be in the order of 2^n)";     //try to fix this issue 
     cin>>N;

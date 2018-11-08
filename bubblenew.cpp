@@ -1,15 +1,16 @@
 #include<iostream>
-#include<vector>
+//#include<vector>
 #include<omp.h>
-#include<thread>
+//#include<thread>
 #include<time.h>
+#include<cstdlib>
 using namespace std;
 
 
 
 
-void bubbleSortSerial(vector<int> &arr){
-	int size=arr.size();
+void bubbleSortSerial(int *arr,int n){
+	int size=n;
 	int temp;
 	for (int i=1;i<size;i++){
 		int flag=0;
@@ -28,11 +29,12 @@ void bubbleSortSerial(vector<int> &arr){
 }
 
 
-void bubbleSortParallel(vector<int> &arr){
-	int size=arr.size();
+void bubbleSortParallel(int *arr,int n){
+	int size=n;
 	int temp;
-	#pragma omp parallel for
-	for (int i=0;i<size-1;i++){
+//	#pragma omp parallel
+//	{
+		for (int i=0;i<size-1;i++){
 			if(i%2==0){
 				// omp_set_num_threads(16);
 				#pragma omp parallel for
@@ -58,32 +60,44 @@ void bubbleSortParallel(vector<int> &arr){
 					}	
 				}	
 	}
+//	}
+	
 		
 }
 
 int main(){
-	int n;
-	cin>>n;
-// omp_set_num_threads(16);
-	vector<int> arr(n);
-	vector<int> brr(n);
+//	int n;
+//	cin>>n;
+ omp_set_num_threads(2);
+//	vector<int> arr(n);
+//	vector<int> brr(n);
+//
+//	for(int i=0;i<n;i++){
+//
+//		cin>>arr[i];
+//		brr[i]=arr[i];
+//	}
+	int N;
+	std::cout << "enter the number of elements to be sorted (number should be in the order of 2^n)";     //try to fix this issue 
+	cin >> N;
+	int *A = new int[N];
+	int *B = new int[N];
+	srand(time(NULL));
 
-	for(int i=0;i<n;i++){
-
-		cin>>arr[i];
-		brr[i]=arr[i];
+	for (int i = 0; i < N; i++) {
+		A[i] = B[i] = (rand() % 10000);
 	}
 	
-
+	
     clock_t t;
     t=clock();
-    bubbleSortSerial(arr); 
+    bubbleSortSerial(A,N); 
     t=clock()-t;
     printf("It serial sort %d clicks %f seconds \n",t,((float)t)/CLOCKS_PER_SEC);
 
     clock_t t1;
     t1=clock();
-    bubbleSortParallel(brr); 
+    bubbleSortParallel(B,N); 
     t1=clock()-t1;
   //   	for(int i=0;i<n;i++)
 		// cout<<brr[i]<<endl;

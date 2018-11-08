@@ -173,7 +173,7 @@ int main(){
     omp_set_num_threads(2);
     cout<<omp_get_num_procs()<<endl;
 	BitonicSorter s;
-	OddEvenMergeSorter o;
+	//OddEvenMergeSorter o;
 	s.sort(b);
 	result=s.getArray();
 	// for(int i=0;i<result.size();i++)

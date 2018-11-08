@@ -1,6 +1,7 @@
 #include <iostream>
 #include <time.h>
 #include <omp.h>
+#include<cstdlib>
 using namespace std; 
 
 int N;
@@ -26,15 +27,26 @@ void bubbleSortP(int arr[])
    int i, j; 
    for (i = 0; i < N-1; i++)      
    {
-    int first = i % 2;
-        #pragma omp parallel for schedule(auto)
-        for (j = first; j < N-1; j+=2)  
+    if(i%2==0){
+    	#pragma omp parallel for 
+        for (j = 0; j < N-1; j+=2)  
                if (arr[j] > arr[j+1]) 
                   {
                     int t = arr[j];
                     arr[j] = arr[j+1];
                     arr[j+1] = t;
                   }      
+	}
+	else{
+		#pragma omp parallel for 
+        for (j = 1; j < N-1; j+=2)  
+               if (arr[j] > arr[j+1]) 
+                  {
+                    int t = arr[j];
+                    arr[j] = arr[j+1];
+                    arr[j+1] = t;
+                  }      
+	}
    } 
 } 
 
@@ -78,9 +90,9 @@ int main()
     t1=clock()-t1;
     printf("It parallel sort %d clicks %f seconds \n",t1,((float)t1)/CLOCKS_PER_SEC);
 
-    // printf("Sorted array : "); 
-    // printArray(A);
-    // printf("Sorted array : "); 
-    // printArray(B);  
+//     printf("Sorted array : "); 
+//     printArray(A);
+//     printf("Sorted array : "); 
+//     printArray(B);  
     return 0; 
 } 

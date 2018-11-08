@@ -4,6 +4,7 @@
 #include<algorithm>
 #include<omp.h>
 #include<vector>
+#include<cstdlib>
 using namespace std;
 
 int N;
@@ -54,25 +55,10 @@ int N;
         if (n>1)
         {
             int m=n/2;
-            // #pragma omp parallel sections
-            // {
-            // 	#pragma omp section
-            #ifdef _OPENMP
-#pragma omp task 
-#endif
+
             		oddEvenMergeSortP(lo, m);
-            	// #pragma omp section
-                    #ifdef _OPENMP
-#pragma omp task 
-#endif
  
                     oddEvenMergeSortP(lo+m, m);
-                    #ifdef _OPENMP
-#pragma omp taskwait
-#endif
-
-
-            // }
             oddEvenMerge(lo, n, 1);
 
         }
@@ -83,14 +69,52 @@ int N;
         oddEvenMergeSortS(0, a.size());
     }
 
-    void sortP()
+    void sortP(int t)
     {
-        oddEvenMergeSortP(0, a.size());
+		if(t==2){
+			 #pragma omp parallel sections num_threads(2)
+             {
+             	#pragma omp section
+            		oddEvenMergeSortP(0, a.size()/2);
+            	 #pragma omp section
+                    oddEvenMergeSortP(a.size()/2, a.size()/2);
+
+             }
+            oddEvenMerge(0, a.size(), 1);
+		}
+		else if(t==4){
+			#pragma omp parallel sections num_threads(4)
+             {
+             	#pragma omp section
+            		oddEvenMergeSortP(0, a.size()/4);
+            	 #pragma omp section
+                    oddEvenMergeSortP(a.size()/4, a.size()/4);
+				#pragma omp section
+            		oddEvenMergeSortP(a.size()/2, a.size()/4);
+            	 #pragma omp section
+                    oddEvenMergeSortP(a.size()/2 + a.size()/4, a.size()/4);
+             }
+             #pragma omp parallel sections num_threads(2)
+			 {
+             	#pragma omp section
+             	oddEvenMerge(0,a.size()/2,1);
+             	#pragma omp section
+             	oddEvenMerge(a.size()/2,a.size()/2,1);
+			 }
+            oddEvenMerge(0, a.size(), 1);
+		}
+		else{
+			oddEvenMergeSortP(0,a.size());
+		}
+			
+
+
+
     }
 
 int main()
 {
-	omp_set_num_threads(4);
+//	omp_set_num_threads(2);
 	srand(time(NULL));
 
     cout<<"enter the number of elements to be sorted (number should be in the order of 2^n)";     //try to fix this issue 
@@ -107,7 +131,7 @@ int main()
 
     clock_t t;
     t=clock();
-	sortP();
+	sortP(1);
 	t=clock()-t;
     printf("It parallel sort %d clicks %f seconds \n",t,((float)t)/CLOCKS_PER_SEC);
 
