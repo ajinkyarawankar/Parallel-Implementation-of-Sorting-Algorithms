@@ -41,7 +41,7 @@ void mergeSortParallel(int *A ,int *temp, int low, int high,int lenArr)
 { 
 	for (int size = 1; size <= high - low; size = 2*size)
 	{
-		#pragma omp parallel for
+		#pragma omp parallel for num_threads(numThreads)
 		for (int i = low; i < high; i += 2*size)
 		{
 			int from = i;

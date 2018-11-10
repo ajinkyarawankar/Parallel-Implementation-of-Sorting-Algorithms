@@ -5,7 +5,7 @@
 #include <algorithm>
 using namespace std;
 
-int numThreads = 4;
+int numThreads = 2;
 int lenArr;
 
 void Swap(int i, int j, int *a, int dir)                                         
@@ -127,7 +127,7 @@ int main()
 {
 	omp_set_num_threads(numThreads);
 	cout<<"Number of Threads are-"<<numThreads<<endl;	                                                   
-	cout << "enter the number of elements to be sorted (number should be in the order of 2^n)";    
+	cout << "enter the number of elements to be sorted (number preffered in the order of 2^n)";    
 	cin >> lenArr;
 	double startTime, stopTime;
 	int *A = new int[lenArr];

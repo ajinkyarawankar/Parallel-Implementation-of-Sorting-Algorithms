@@ -153,8 +153,11 @@ int main()
 	vector<int> temp;
 	srand(time(NULL));
 	cout<<"Number of Threads are-"<<numThreads<<endl;
-    cout<<"enter the number of elements to be sorted (number should be in the order of 2^n)";     
+    cout<<"enter the number of elements to be sorted (number preffered in the order of 2^n)";     
     cin>>lenArr;
+    a.resize(lenArr);
+    b.resize(lenArr);
+    c.resize(lenArr);
 	int originalLength=lenArr;
 	printf("Initializing the arrays with random numbers...\n");
 	for (int i = 0; i < lenArr; i++){
@@ -202,7 +205,8 @@ int main()
     printf("Sorted in (approx.): %f seconds \n",(double)(stopTime-startTime)/CLOCKS_PER_SEC);
 
 	printf("\nChecking if the results are correct...\n");
-	bool correctResult = checkResult(a,c);
+	bool correctResult;
+	correctResult= checkResult(a,c);
 	if(correctResult){
 		printf("The result with 'custom SERIAL OddEvenMergeSortSerial' is CORRECT\n");
 	}else{
